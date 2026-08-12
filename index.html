@@ -958,7 +958,7 @@
     <div class="card" style="border-color:var(--amber);">
       <h2>Company-Wide Sync</h2>
       <p style="margin:0 0 10px; font-size:0.86rem; color:var(--slate-light);">
-        Paste the shared registry link once (get it from whoever set up the company Google Sheet — see setup guide) and every device using this same link will see the same dies.
+        This copy is pre-connected to the shared company registry — dies added by anyone show up for everyone automatically, no setup needed. Only touch the box below if you specifically need to point this device at a different sheet.
       </p>
       <div class="field" style="grid-template-columns:1fr auto;">
         <input type="text" id="dieSyncUrl" placeholder="https://script.google.com/macros/s/.../exec" style="text-align:left;">
@@ -1915,6 +1915,10 @@ function updateCuttingMethodUI(){
 // ---- Die Registry ----
 const DIES_KEY = 'ashiesh_die_registry';
 const DIE_SYNC_URL_KEY = 'ashiesh_die_sync_url';
+// Baked-in shared registry link — every teammate who opens this hosted file
+// connects automatically, no manual paste needed. Replace the placeholder
+// below with your Apps Script /exec URL, then re-upload to GitHub.
+const DEFAULT_DIE_SYNC_URL = 'https://script.google.com/macros/s/AKfycbyEwOY0Dxgh35Nz75JNZwVSoP4RH90QxBtDi0fxY8Ugox2YBfbJ4PKdRNTcI0dvm9H-/exec';
 
 function loadDies(){
   try{ const raw = localStorage.getItem(DIES_KEY); return raw ? JSON.parse(raw) : []; }
@@ -1928,7 +1932,8 @@ function persistDiesLocalCache(){
   }
 }
 let dies = loadDies();
-let dieSyncUrl = localStorage.getItem(DIE_SYNC_URL_KEY) || '';
+let dieSyncUrl = localStorage.getItem(DIE_SYNC_URL_KEY) ||
+  (DEFAULT_DIE_SYNC_URL !== 'PASTE_YOUR_WEB_APP_URL_HERE' ? DEFAULT_DIE_SYNC_URL : '');
 
 function setDieSyncStatus(text, kind){
   const el = document.getElementById('dieSyncStatus');
