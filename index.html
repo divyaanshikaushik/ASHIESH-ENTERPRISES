@@ -584,7 +584,7 @@
       <h2>1. Product &amp; Material</h2>
       <div class="field">
         <label>Product name</label>
-        <input type="text" id="productName" value="Yoga Mat - 6mm" style="text-align:left;">
+        <input type="text" id="productName" value="" style="text-align:left;">
       </div>
       <div class="field">
         <label>Party / client name</label>
@@ -609,20 +609,20 @@
       <div class="divider"></div>
       <div class="field">
         <label>Sheet thickness (<span id="thicknessUnitLabel">mm</span>)</label>
-        <input type="number" id="thickness" value="6" step="0.5">
+        <input type="number" id="thickness" value="0" step="0.5">
       </div>
       <div class="field">
         <label>Rate per <span id="rateUnitLabel">mm</span> thickness (₹/<span id="rateUnitLabel2">mm</span>)</label>
-        <input type="number" id="ratePerMm" value="130" step="1">
+        <input type="number" id="ratePerMm" value="0" step="1">
       </div>
       <div class="divider"></div>
       <div class="field">
         <label>Standard sheet length (<span id="dimUnitLabel1">in</span>)</label>
-        <input type="number" id="sheetLen" value="80" step="1">
+        <input type="number" id="sheetLen" value="0" step="1">
       </div>
       <div class="field">
         <label>Standard sheet width (<span id="dimUnitLabel2">in</span>)</label>
-        <input type="number" id="sheetWid" value="40" step="1">
+        <input type="number" id="sheetWid" value="0" step="1">
       </div>
       <div class="field">
         <label>Die size — length a (<span id="dimUnitLabel3">in</span>)</label>
@@ -645,7 +645,7 @@
       <div id="clickerOnlyFields">
         <div class="field">
           <label>Pieces per shot (die)</label>
-          <input type="number" id="piecesPerShot" value="1" step="1" min="1">
+          <input type="number" id="piecesPerShot" value="0" step="1" min="1">
         </div>
         <div class="row-note">How many finished pieces the item's die cuts in one clicker press stroke. Set to 1 if it cuts a single piece per stroke.</div>
         <div class="divider"></div>
@@ -655,15 +655,15 @@
         </div>
         <div class="field">
           <label>Patta die — length (<span id="dimUnitLabel5">in</span>)</label>
-          <input type="number" id="pattaLen" value="40" step="0.25">
+          <input type="number" id="pattaLen" value="0" step="0.25">
         </div>
         <div class="field">
           <label>Patta die — width (<span id="dimUnitLabel6">in</span>)</label>
-          <input type="number" id="pattaWid" value="10" step="0.25">
+          <input type="number" id="pattaWid" value="0" step="0.25">
         </div>
         <div class="field">
           <label>Patta cutting cost (₹)</label>
-          <input type="number" id="pattaCost" value="10" step="0.5">
+          <input type="number" id="pattaCost" value="0" step="0.5">
         </div>
         <div class="row-note">First fits the patta die on the sheet, then fits the item's die within one patta, to work out total pieces per sheet.</div>
         <div class="divider"></div>
@@ -695,23 +695,23 @@
       <div id="cncOnlyFields">
         <div class="field">
           <label>CNC rate (₹/hr)</label>
-          <input type="number" id="cncRate" value="300" step="10">
+          <input type="number" id="cncRate" value="0" step="10">
         </div>
         <div class="field">
           <label>CNC time per unit (<span id="timeUnitLabel1">hrs</span>)</label>
-          <input type="number" id="cncTime" value="0.10" step="0.01">
+          <input type="number" id="cncTime" value="0" step="0.01">
         </div>
       </div>
       <div id="clickerRateField">
         <div class="field">
           <label>Hydraulic clicker rate per shot (₹)</label>
-          <input type="number" id="clickerRate" value="15" step="1">
+          <input type="number" id="clickerRate" value="12" step="1">
         </div>
         <div class="row-note">Flat charge for one press stroke — cost per unit divides this by pieces per shot.</div>
       </div>
       <div class="field">
         <label>Laser engraving rate (₹/hr)</label>
-        <input type="number" id="laserRate" value="350" step="10">
+        <input type="number" id="laserRate" value="0" step="10">
       </div>
       <div class="field">
         <label>Laser time per unit (<span id="timeUnitLabel2">hrs</span>)</label>
@@ -730,7 +730,7 @@
       <h2>3. Other Costs (per unit)</h2>
       <div class="field">
         <label>Other process cost per unit (₹)</label>
-        <input type="number" id="processCost" value="5" step="0.5">
+        <input type="number" id="processCost" value="0" step="0.5">
       </div>
       <div class="divider"></div>
       <div class="field">
@@ -739,17 +739,17 @@
       </div>
       <div class="field">
         <label>Tape pasting cost per sheet (₹)</label>
-        <input type="number" id="tapeCostPerSheet" value="60" step="1">
+        <input type="number" id="tapeCostPerSheet" value="0" step="1">
       </div>
       <div class="row-note">If checked, this cost is split across all pieces on the sheet instead of charged per unit.</div>
       <div class="divider"></div>
       <div class="field">
         <label>Packaging cost (₹)</label>
-        <input type="number" id="packagingCost" value="8" step="0.5">
+        <input type="number" id="packagingCost" value="0" step="0.5">
       </div>
       <div class="field">
         <label>Labour cost (₹)</label>
-        <input type="number" id="labourCost" value="12" step="0.5">
+        <input type="number" id="labourCost" value="0" step="0.5">
       </div>
       <div class="divider"></div>
       <div class="field">
@@ -758,7 +758,7 @@
       </div>
       <div class="field">
         <label>Magnet cost per unit (₹)</label>
-        <input type="number" id="magnetCost" value="4" step="0.5">
+        <input type="number" id="magnetCost" value="0" step="0.5">
       </div>
       <div class="row-note">Magnet cost is only added to the total when "Magnet required?" is checked.</div>
       <div class="step-nav">
@@ -777,7 +777,7 @@
       </div>
       <div class="field">
         <label>Batch quantity (units)</label>
-        <input type="number" id="batchQty" value="500" step="1">
+        <input type="number" id="batchQty" value="0" step="1">
       </div>
       <div class="step-nav">
         <button class="btn secondary" onclick="goStep(3)">← Back</button>
@@ -848,6 +848,7 @@
     <div id="savedTableWrap">
       <div class="empty-note">No products saved yet. Fill in the details above and click "Save this product" to add it here.</div>
     </div>
+    <div id="productSyncStatus" style="font-size:0.82rem; margin:8px 0 0; color:var(--slate-light);"></div>
     <div class="actions" id="listActions" style="display:none;">
       <button class="btn secondary" onclick="exportCSV()">Export list as CSV</button>
       <button class="btn secondary" onclick="clearList()">Clear list</button>
@@ -921,6 +922,10 @@
     <div class="card">
       <h2>Assembly Cost Summary</h2>
       <div id="kitSummaryWrap"></div>
+      <div class="actions">
+        <button class="btn secondary" onclick="saveKitToSheet()">Save this kit's price to Company Sheet</button>
+      </div>
+      <div id="kitSyncStatus" style="font-size:0.82rem; margin-top:8px; color:var(--slate-light);"></div>
     </div>
 
     <div class="card">
@@ -1357,10 +1362,44 @@ function renderSavedTable(){
     </table>`;
 }
 
-function saveProduct(){
-  savedProducts.push(currentRecord());
+async function saveProduct(){
+  const record = currentRecord();
+  savedProducts.push(record);
   persistSavedProducts();
   renderSavedTable();
+
+  const statusEl = document.getElementById('productSyncStatus');
+  if (!dieSyncUrl){
+    if (statusEl) statusEl.textContent = 'Saved on this device only — connect Company-Wide Sync (Die Registry tab) to also save this to the shared sheet.';
+    return;
+  }
+  const d = window.lastCalc || {};
+  const sheetRecord = {
+    id: 'product_' + Date.now(),
+    name: d.productName || record.name,
+    party: d.partyName || record.party,
+    pieces: d.pieces || 0,
+    totalCost: d.totalCost || 0,
+    sellingPrice: d.sellingPrice || 0,
+    batchQty: d.batchQty || 0,
+    sheetsRequired: d.sheetsRequired || 0,
+    batchCost: d.batchCost || 0,
+    batchPrice: d.batchPrice || 0,
+    batchProfit: d.batchProfit || 0,
+    dateAdded: new Date().toISOString().slice(0,10)
+  };
+  if (statusEl) statusEl.textContent = 'Saving to Company Sheet…';
+  try{
+    await fetch(dieSyncUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ type: 'products', action: 'save', record: sheetRecord })
+    });
+    if (statusEl) statusEl.textContent = 'Saved ✓ — also added to the Company Sheet (Products tab).';
+  } catch(e){
+    console.warn('Product sync failed:', e);
+    if (statusEl) statusEl.textContent = 'Saved on this device, but could not reach the Company Sheet — check your connection.';
+  }
 }
 
 function removeProduct(i){
@@ -1707,6 +1746,49 @@ function renderKitBuilder(){
   };
 }
 
+async function saveKitToSheet(){
+  renderKitBuilder();
+  const k = window.lastKitCalc;
+  const statusEl = document.getElementById('kitSyncStatus');
+  if (!k || !k.components.length){
+    if (statusEl) statusEl.textContent = 'Add at least one component to this assembly before saving.';
+    return;
+  }
+  if (!dieSyncUrl){
+    if (statusEl) statusEl.textContent = 'Not connected — go to the Die Registry tab and connect Company-Wide Sync first.';
+    return;
+  }
+  const a = getCurrentAssembly();
+  const record = {
+    id: a.id,
+    name: k.kitName,
+    party: k.kitParty,
+    componentCount: k.components.length,
+    componentCostPerKit: k.componentCostPerKit,
+    packaging: k.packaging,
+    labour: k.labour,
+    totalCostPerKit: k.totalCostPerKit,
+    sellingPricePerKit: k.sellingPricePerKit,
+    batchQty: k.batchQty,
+    batchCost: k.batchCost,
+    batchPrice: k.batchPrice,
+    batchProfit: k.batchProfit,
+    dateAdded: new Date().toISOString().slice(0,10)
+  };
+  if (statusEl) statusEl.textContent = 'Saving to Company Sheet…';
+  try{
+    await fetch(dieSyncUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ type: 'kits', action: 'save', record })
+    });
+    if (statusEl) statusEl.textContent = 'Saved ✓ — this kit\'s price is now on the Company Sheet (Kits tab). Saving again updates the same row.';
+  } catch(e){
+    console.warn('Kit sync failed:', e);
+    if (statusEl) statusEl.textContent = 'Could not reach the Company Sheet — check your connection and try again.';
+  }
+}
+
 function sendKitToOrderBoard(){
   renderKitBuilder();
   const k = window.lastKitCalc;
@@ -1963,7 +2045,7 @@ async function refreshDiesFromServer(){
   }
   setDieSyncStatus('Syncing…', 'info');
   try{
-    const res = await fetch(dieSyncUrl, { method: 'GET' });
+    const res = await fetch(dieSyncUrl + (dieSyncUrl.indexOf('?') > -1 ? '&' : '?') + 'type=dies', { method: 'GET' });
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || 'Server error');
     dies = (data.records || []).map(r => ({
@@ -2091,12 +2173,47 @@ function prefillDieFromCalc(){
   showTab('dieregistry');
 }
 
+// Looks for another die (excluding the one currently being edited, if any)
+// with a matching code and/or name. Returns null if no conflict.
+function findDuplicateDie(code, name, excludeId){
+  const codeNorm = (code || '').trim().toLowerCase();
+  const nameNorm = (name || '').trim().toLowerCase();
+  return dies.find(d => {
+    if (excludeId && d.id === excludeId) return false;
+    const dCode = (d.code || '').trim().toLowerCase();
+    const dName = (d.name || '').trim().toLowerCase();
+    return (codeNorm && dCode === codeNorm) || (nameNorm && dName === nameNorm);
+  }) || null;
+}
+
 async function saveDie(){
   const id = document.getElementById('dieRecordId').value;
+  const enteredCode = document.getElementById('dieCode').value.trim() || nextDieCode();
+  const enteredName = document.getElementById('dieName').value.trim() || 'Unnamed die';
+
+  const duplicate = findDuplicateDie(enteredCode, enteredName, id || null);
+  let targetId = id || ('die_' + Date.now());
+
+  if (duplicate){
+    const matchedOn = (duplicate.code || '').trim().toLowerCase() === enteredCode.trim().toLowerCase()
+      ? 'code "' + duplicate.code + '"'
+      : 'name "' + duplicate.name + '"';
+    const confirmReplace = confirm(
+      'A die with ' + matchedOn + ' already exists — used for ' + (duplicate.client || 'Unspecified') +
+      ' / ' + (duplicate.product || 'unspecified product') + ', last added ' + (duplicate.dateAdded || 'unknown date') + '.\n\n' +
+      'Click OK to REPLACE that die\'s information with what you just entered.\n' +
+      'Click Cancel to go back and use a different code/name instead.'
+    );
+    if (!confirmReplace){
+      return; // let them adjust the form — nothing saved
+    }
+    targetId = duplicate.id; // overwrite the existing row instead of creating a new one
+  }
+
   const record = {
-    id: id || ('die_' + Date.now()),
-    code: document.getElementById('dieCode').value.trim() || nextDieCode(),
-    name: document.getElementById('dieName').value.trim() || 'Unnamed die',
+    id: targetId,
+    code: enteredCode,
+    name: enteredName,
     client: document.getElementById('dieClient').value.trim() || 'Unspecified',
     product: document.getElementById('dieProduct').value.trim(),
     length: num('dieLength'),
@@ -2113,7 +2230,7 @@ async function saveDie(){
   };
 
   const saveBtn = document.getElementById('dieSaveBtn');
-  const wasEditing = !!id;
+  const wasEditing = !!id || !!duplicate;
 
   if (dieSyncUrl){
     saveBtn.disabled = true;
@@ -2123,7 +2240,7 @@ async function saveDie(){
       await fetch(dieSyncUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action: 'save', record })
+        body: JSON.stringify({ type: 'dies', action: 'save', record })
       });
       await refreshDiesFromServer();
       resetDieForm();
@@ -2138,12 +2255,8 @@ async function saveDie(){
   }
 
   // No sync configured — local-only fallback
-  if (id){
-    const idx = dies.findIndex(d => d.id === id);
-    if (idx > -1) dies[idx] = record; else dies.push(record);
-  } else {
-    dies.push(record);
-  }
+  const idx = dies.findIndex(d => d.id === record.id);
+  if (idx > -1) dies[idx] = record; else dies.push(record);
   try{
     persistDiesLocalCache();
   } catch(e){
@@ -2189,7 +2302,7 @@ async function deleteDie(id){
       await fetch(dieSyncUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action: 'delete', id })
+        body: JSON.stringify({ type: 'dies', action: 'delete', id })
       });
       await refreshDiesFromServer();
     } catch(e){
