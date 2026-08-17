@@ -626,11 +626,11 @@
       </div>
       <div class="field">
         <label>Die size — length a (<span id="dimUnitLabel3">in</span>)</label>
-        <input type="number" id="dieA" value="24" step="0.25">
+        <input type="number" id="dieA" value="0" step="0.25">
       </div>
       <div class="field">
         <label>Die size — width b (<span id="dimUnitLabel4">in</span>)</label>
-        <input type="number" id="dieB" value="8" step="0.25">
+        <input type="number" id="dieB" value="0" step="0.25">
       </div>
       <div class="divider"></div>
       <div class="field">
@@ -684,22 +684,19 @@
     <div class="step-panel" data-step="2">
     <div class="card">
       <h2>2. Machine Time &amp; Rates (per unit)</h2>
-      <div class="field">
-        <label>Time unit</label>
-        <select id="timeUnit" onchange="onTimeUnitChange()" style="font-family:inherit; font-size:0.88rem; padding:6px 8px; border:1px solid #c9c2b2; border-radius:4px; background:#fffdf7; text-align:right;">
-          <option value="hr">hours</option>
-          <option value="min">minutes</option>
-        </select>
-      </div>
-      <div class="divider"></div>
       <div id="cncOnlyFields">
         <div class="field">
           <label>CNC rate (₹/hr)</label>
           <input type="number" id="cncRate" value="0" step="10">
         </div>
         <div class="field">
-          <label>CNC time per unit (<span id="timeUnitLabel1">hrs</span>)</label>
-          <input type="number" id="cncTime" value="0" step="0.01">
+          <label>CNC time per unit</label>
+          <div style="display:flex; gap:6px; align-items:center; justify-content:flex-end;">
+            <input type="number" id="cncTimeMin" value="0" step="1" min="0" style="width:70px;" placeholder="min">
+            <span style="font-size:0.8rem; color:var(--slate-light);">min</span>
+            <input type="number" id="cncTimeSec" value="0" step="1" min="0" max="59" style="width:70px;" placeholder="sec">
+            <span style="font-size:0.8rem; color:var(--slate-light);">sec</span>
+          </div>
         </div>
       </div>
       <div id="clickerRateField">
@@ -714,10 +711,15 @@
         <input type="number" id="laserRate" value="0" step="10">
       </div>
       <div class="field">
-        <label>Laser time per unit (<span id="timeUnitLabel2">hrs</span>)</label>
-        <input type="number" id="laserTime" value="0" step="0.01">
+        <label>Laser time per unit</label>
+        <div style="display:flex; gap:6px; align-items:center; justify-content:flex-end;">
+          <input type="number" id="laserTimeMin" value="0" step="1" min="0" style="width:70px;" placeholder="min">
+          <span style="font-size:0.8rem; color:var(--slate-light);">min</span>
+          <input type="number" id="laserTimeSec" value="0" step="1" min="0" max="59" style="width:70px;" placeholder="sec">
+          <span style="font-size:0.8rem; color:var(--slate-light);">sec</span>
+        </div>
       </div>
-      <div class="row-note">Leave laser time as 0 if the product isn't engraved.</div>
+      <div class="row-note">Leave laser time as 0 if the product isn't engraved. For 1 min 45 sec, enter 1 in the min box and 45 in the sec box.</div>
       <div class="step-nav">
         <button class="btn secondary" onclick="goStep(1)">← Back</button>
         <button class="btn" onclick="goStep(3)">Next: Other Costs →</button>
@@ -1101,11 +1103,10 @@
 </footer>
 
 <script>
-// ---- Unit toggles (thickness mm/in, dimensions mm/in, time hr/min) ----
+// ---- Unit toggles (thickness mm/in, dimensions mm/in) ----
 const MM_PER_IN = 25.4;
 let thicknessUnit = 'mm';
 let dimensionUnit = 'in';
-let timeUnit_state = 'hr';
 
 function convertFieldValue(id, factor){
   const el = document.getElementById(id);
@@ -1123,10 +1124,6 @@ function updateUnitLabels(){
   ['dimUnitLabel1','dimUnitLabel2','dimUnitLabel3','dimUnitLabel4','dimUnitLabel5','dimUnitLabel6'].forEach(id => {
     document.getElementById(id).textContent = dLabel;
   });
-
-  const timeLabel = timeUnit_state === 'hr' ? 'hrs' : 'min';
-  document.getElementById('timeUnitLabel1').textContent = timeLabel;
-  document.getElementById('timeUnitLabel2').textContent = timeLabel;
 }
 
 function onThicknessUnitChange(){
@@ -1146,17 +1143,6 @@ function onDimensionUnitChange(){
   const f = (newUnit === 'mm') ? MM_PER_IN : (1 / MM_PER_IN);
   ['sheetLen','sheetWid','dieA','dieB','pattaLen','pattaWid'].forEach(id => convertFieldValue(id, f));
   dimensionUnit = newUnit;
-  updateUnitLabels();
-  calculate();
-}
-
-function onTimeUnitChange(){
-  const newUnit = document.getElementById('timeUnit').value;
-  if (newUnit === timeUnit_state) return;
-  const f = (newUnit === 'min') ? 60 : (1 / 60);
-  convertFieldValue('cncTime', f);
-  convertFieldValue('laserTime', f);
-  timeUnit_state = newUnit;
   updateUnitLabels();
   calculate();
 }
@@ -1181,12 +1167,11 @@ function calculate(){
   const piecesPerShot = isClicker ? Math.max(num('piecesPerShot'), 1) : 1;
   const wastagePct = num('wastagePct') / 100;
 
-  const cncRate = num('cncRate'), cncTime = num('cncTime');
+  const cncRate = num('cncRate');
   const clickerRate = num('clickerRate');
-  const laserRate = num('laserRate'), laserTime = num('laserTime');
-  const timeUnit = document.getElementById('timeUnit').value;
-  const cncTimeHours = (timeUnit === 'min') ? cncTime / 60 : cncTime;
-  const laserTimeHours = (timeUnit === 'min') ? laserTime / 60 : laserTime;
+  const laserRate = num('laserRate');
+  const cncTimeHours = (num('cncTimeMin') * 60 + num('cncTimeSec')) / 3600;
+  const laserTimeHours = (num('laserTimeMin') * 60 + num('laserTimeSec')) / 3600;
   const pattaRequired = isClicker && document.getElementById('pattaRequired').checked;
   const pattaLen = num('pattaLen');
   const pattaWid = num('pattaWid');
@@ -1276,7 +1261,7 @@ function calculate(){
     pattaRequired, pattaLen, pattaWid, pattaCost,
     tapeOnSheet, tapeCostPerSheet,
     magnetRequired, magnetCost,
-    cncTime, laserTime,
+    cncTime: cncTimeHours, laserTime: laserTimeHours,
     wastagePct, marginPct, batchQty,
     sheetCost, shots, pattasPerSheet, shotsPerPatta, piecesPerPatta, pieces,
     materialCost, wastageCost, cncCost, clickerCost, laserCost, pattaCostPerUnit,
