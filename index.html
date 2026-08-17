@@ -618,20 +618,21 @@
       <div class="divider"></div>
       <div class="field">
         <label>Standard sheet length (<span id="dimUnitLabel1">in</span>)</label>
-        <input type="number" id="sheetLen" value="0" step="1">
+        <input type="number" id="sheetLen" value="80" step="1">
       </div>
       <div class="field">
         <label>Standard sheet width (<span id="dimUnitLabel2">in</span>)</label>
-        <input type="number" id="sheetWid" value="0" step="1">
+        <input type="number" id="sheetWid" value="40" step="1">
       </div>
       <div class="field">
-        <label>Die size — length a (<span id="dimUnitLabel3">in</span>)</label>
+        <label><span id="dieSizeLabel1">Die size — length a</span> (<span id="dimUnitLabel3">in</span>)</label>
         <input type="number" id="dieA" value="0" step="0.25">
       </div>
       <div class="field">
-        <label>Die size — width b (<span id="dimUnitLabel4">in</span>)</label>
+        <label><span id="dieSizeLabel2">Die size — width b</span> (<span id="dimUnitLabel4">in</span>)</label>
         <input type="number" id="dieB" value="0" step="0.25">
       </div>
+      <div class="row-note" id="dieSizeNote">For Hydraulic Clicker, enter the physical die's dimensions. For CNC, enter the item's outer (bounding box) size instead — there's no physical die on CNC.</div>
       <div class="divider"></div>
       <div class="field">
         <label>Cutting method for this item</label>
@@ -692,7 +693,9 @@
         <div class="field">
           <label>CNC time per unit</label>
           <div style="display:flex; gap:6px; align-items:center; justify-content:flex-end;">
-            <input type="number" id="cncTimeMin" value="0" step="1" min="0" style="width:70px;" placeholder="min">
+            <input type="number" id="cncTimeHr" value="0" step="1" min="0" style="width:70px;" placeholder="hr">
+            <span style="font-size:0.8rem; color:var(--slate-light);">hr</span>
+            <input type="number" id="cncTimeMin" value="0" step="1" min="0" max="59" style="width:70px;" placeholder="min">
             <span style="font-size:0.8rem; color:var(--slate-light);">min</span>
             <input type="number" id="cncTimeSec" value="0" step="1" min="0" max="59" style="width:70px;" placeholder="sec">
             <span style="font-size:0.8rem; color:var(--slate-light);">sec</span>
@@ -706,20 +709,29 @@
         </div>
         <div class="row-note">Flat charge for one press stroke — cost per unit divides this by pieces per shot.</div>
       </div>
+      <div class="divider"></div>
       <div class="field">
-        <label>Laser engraving rate (₹/hr)</label>
-        <input type="number" id="laserRate" value="0" step="10">
+        <label>Laser engraving involved?</label>
+        <input type="checkbox" id="laserRequired" onchange="updateLaserFieldsUI(); calculate();" style="justify-self:end; width:18px; height:18px;">
       </div>
-      <div class="field">
-        <label>Laser time per unit</label>
-        <div style="display:flex; gap:6px; align-items:center; justify-content:flex-end;">
-          <input type="number" id="laserTimeMin" value="0" step="1" min="0" style="width:70px;" placeholder="min">
-          <span style="font-size:0.8rem; color:var(--slate-light);">min</span>
-          <input type="number" id="laserTimeSec" value="0" step="1" min="0" max="59" style="width:70px;" placeholder="sec">
-          <span style="font-size:0.8rem; color:var(--slate-light);">sec</span>
+      <div id="laserFields" style="display:none;">
+        <div class="field">
+          <label>Laser engraving rate (₹/hr)</label>
+          <input type="number" id="laserRate" value="0" step="10">
         </div>
+        <div class="field">
+          <label>Laser time per unit</label>
+          <div style="display:flex; gap:6px; align-items:center; justify-content:flex-end;">
+            <input type="number" id="laserTimeHr" value="0" step="1" min="0" style="width:70px;" placeholder="hr">
+            <span style="font-size:0.8rem; color:var(--slate-light);">hr</span>
+            <input type="number" id="laserTimeMin" value="0" step="1" min="0" max="59" style="width:70px;" placeholder="min">
+            <span style="font-size:0.8rem; color:var(--slate-light);">min</span>
+            <input type="number" id="laserTimeSec" value="0" step="1" min="0" max="59" style="width:70px;" placeholder="sec">
+            <span style="font-size:0.8rem; color:var(--slate-light);">sec</span>
+          </div>
+        </div>
+        <div class="row-note">For 1 min 45 sec, enter 1 in the min box and 45 in the sec box.</div>
       </div>
-      <div class="row-note">Leave laser time as 0 if the product isn't engraved. For 1 min 45 sec, enter 1 in the min box and 45 in the sec box.</div>
       <div class="step-nav">
         <button class="btn secondary" onclick="goStep(1)">← Back</button>
         <button class="btn" onclick="goStep(3)">Next: Other Costs →</button>
@@ -1169,9 +1181,10 @@ function calculate(){
 
   const cncRate = num('cncRate');
   const clickerRate = num('clickerRate');
-  const laserRate = num('laserRate');
-  const cncTimeHours = (num('cncTimeMin') * 60 + num('cncTimeSec')) / 3600;
-  const laserTimeHours = (num('laserTimeMin') * 60 + num('laserTimeSec')) / 3600;
+  const laserRequired = document.getElementById('laserRequired').checked;
+  const laserRate = laserRequired ? num('laserRate') : 0;
+  const cncTimeHours = num('cncTimeHr') + (num('cncTimeMin') * 60 + num('cncTimeSec')) / 3600;
+  const laserTimeHours = laserRequired ? (num('laserTimeHr') + (num('laserTimeMin') * 60 + num('laserTimeSec')) / 3600) : 0;
   const pattaRequired = isClicker && document.getElementById('pattaRequired').checked;
   const pattaLen = num('pattaLen');
   const pattaWid = num('pattaWid');
@@ -1261,7 +1274,7 @@ function calculate(){
     pattaRequired, pattaLen, pattaWid, pattaCost,
     tapeOnSheet, tapeCostPerSheet,
     magnetRequired, magnetCost,
-    cncTime: cncTimeHours, laserTime: laserTimeHours,
+    cncTime: cncTimeHours, laserTime: laserTimeHours, laserRequired,
     wastagePct, marginPct, batchQty,
     sheetCost, shots, pattasPerSheet, shotsPerPatta, piecesPerPatta, pieces,
     materialCost, wastageCost, cncCost, clickerCost, laserCost, pattaCostPerUnit,
@@ -1971,12 +1984,24 @@ function goStep(n){
   window.scrollTo({top: 0, behavior: 'smooth'});
 }
 
+// ---- Laser engraving toggle ----
+function updateLaserFieldsUI(){
+  const laserOn = document.getElementById('laserRequired').checked;
+  document.getElementById('laserFields').style.display = laserOn ? 'block' : 'none';
+}
+
 // ---- Cutting method toggle ----
 function updateCuttingMethodUI(){
   const isClicker = document.getElementById('cuttingMethod').value === 'clicker';
   document.getElementById('clickerOnlyFields').style.display = isClicker ? 'block' : 'none';
   document.getElementById('clickerRateField').style.display = isClicker ? 'block' : 'none';
   document.getElementById('cncOnlyFields').style.display = isClicker ? 'none' : 'block';
+
+  document.getElementById('dieSizeLabel1').textContent = isClicker ? 'Die size — length a' : 'Item outer size — length a';
+  document.getElementById('dieSizeLabel2').textContent = isClicker ? 'Die size — width b' : 'Item outer size — width b';
+  document.getElementById('dieSizeNote').textContent = isClicker
+    ? 'Enter the physical die\'s dimensions — this is what stamps out each piece.'
+    : 'Enter the item\'s outer (bounding box) size — there\'s no physical die on CNC, this is just the overall footprint of the cut shape.';
 }
 
 // ---- Die Registry ----
@@ -2403,6 +2428,7 @@ function exportDieCSV(){
 document.querySelectorAll('input').forEach(el => el.addEventListener('input', calculate));
 updateUnitLabels();
 updateCuttingMethodUI();
+updateLaserFieldsUI();
 calculate();
 renderSavedTable();
 initKitBuilder();
