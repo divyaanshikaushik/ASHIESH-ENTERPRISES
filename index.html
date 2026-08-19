@@ -711,6 +711,12 @@
       </div>
       <div class="divider"></div>
       <div class="field">
+        <label>Sheets stacked per cut (layers)</label>
+        <input type="number" id="stackLayers" value="1" step="1" min="1">
+      </div>
+      <div class="row-note">If you stack multiple sheets and cut/punch through all of them in one pass, enter how many layers. Machine time (CNC) or shot cost (Clicker) then splits across all those layers — material cost stays the same per piece since you still use one sheet per layer. Leave as 1 if you cut a single sheet at a time.</div>
+      <div class="divider"></div>
+      <div class="field">
         <label>Laser engraving involved?</label>
         <input type="checkbox" id="laserRequired" onchange="updateLaserFieldsUI(); calculate();" style="justify-self:end; width:18px; height:18px;">
       </div>
@@ -813,6 +819,7 @@
       <div class="result-line"><span>Wastage cost / unit</span><span class="val" id="outWastage">–</span></div>
       <div class="result-line"><span>CNC cost / unit</span><span class="val" id="outCnc">–</span></div>
       <div class="result-line"><span>Clicker cost / unit</span><span class="val" id="outClicker">–</span></div>
+      <div class="row-note" id="layersNote" style="display:none;"></div>
       <div class="result-line"><span>Laser cost / unit</span><span class="val" id="outLaser">–</span></div>
       <div class="result-line"><span>Patta cutting cost / unit</span><span class="val" id="outPatta">–</span></div>
       <div class="result-line"><span>Process cost / unit</span><span class="val" id="outProcess">–</span></div>
@@ -1177,6 +1184,7 @@ function calculate(){
   const cuttingMethod = document.getElementById('cuttingMethod').value;
   const isClicker = cuttingMethod === 'clicker';
   const piecesPerShot = isClicker ? Math.max(num('piecesPerShot'), 1) : 1;
+  const stackLayers = Math.max(num('stackLayers') || 1, 1);
   const wastagePct = num('wastagePct') / 100;
 
   const cncRate = num('cncRate');
@@ -1231,8 +1239,8 @@ function calculate(){
   const materialCost = pieces > 0 ? sheetCost / pieces : 0;
   const tapeCost = (tapeOnSheet && pieces > 0) ? tapeCostPerSheet / pieces : 0;
   const wastageCost = materialCost * wastagePct;
-  const cncCost = !isClicker ? (cncRate * cncTimeHours) : 0;
-  const clickerCost = isClicker ? (clickerRate / piecesPerShot) : 0;
+  const cncCost = !isClicker ? (cncRate * cncTimeHours / stackLayers) : 0;
+  const clickerCost = isClicker ? (clickerRate / (piecesPerShot * stackLayers)) : 0;
   const laserCost = laserRate * laserTimeHours;
   const pattaCostPerUnit = (pattaRequired && piecesPerPatta > 0) ? pattaCost / piecesPerPatta : 0;
 
@@ -1253,6 +1261,13 @@ function calculate(){
   document.getElementById('outWastage').textContent = fmt(wastageCost);
   document.getElementById('outCnc').textContent = fmt(cncCost);
   document.getElementById('outClicker').textContent = fmt(clickerCost);
+  const layersNoteEl = document.getElementById('layersNote');
+  if (stackLayers > 1){
+    layersNoteEl.style.display = 'block';
+    layersNoteEl.textContent = (isClicker ? 'Clicker' : 'CNC') + ' cost above is already split across ' + stackLayers + ' stacked layers.';
+  } else {
+    layersNoteEl.style.display = 'none';
+  }
   document.getElementById('outLaser').textContent = fmt(laserCost);
   document.getElementById('outPatta').textContent = fmt(pattaCostPerUnit);
   document.getElementById('outProcess').textContent = fmt(processCost);
@@ -1270,7 +1285,7 @@ function calculate(){
   window.lastCalc = {
     productName: document.getElementById('productName').value || 'Unnamed product',
     partyName: document.getElementById('partyName').value || 'Unspecified party',
-    thickness, ratePerMm, sheetLen, sheetWid, dieA, dieB, piecesPerShot,
+    thickness, ratePerMm, sheetLen, sheetWid, dieA, dieB, piecesPerShot, stackLayers,
     pattaRequired, pattaLen, pattaWid, pattaCost,
     tapeOnSheet, tapeCostPerSheet,
     magnetRequired, magnetCost,
@@ -1377,8 +1392,18 @@ async function saveProduct(){
     name: d.productName || record.name,
     party: d.partyName || record.party,
     pieces: d.pieces || 0,
-    totalCost: d.totalCost || 0,
-    sellingPrice: d.sellingPrice || 0,
+    materialCost: d.materialCost || 0,
+    wastageCost: d.wastageCost || 0,
+    cncCost: d.cncCost || 0,
+    clickerCost: d.clickerCost || 0,
+    laserCost: d.laserCost || 0,
+    pattaCost: d.pattaCostPerUnit || 0,
+    processCost: d.processCost || 0,
+    tapeCost: d.tapeCost || 0,
+    packagingCost: d.packagingCost || 0,
+    labourCost: d.labourCost || 0,
+    magnetCost: d.magnetCostPerUnit || 0,
+    totalCost: d.sellingPrice || 0,
     batchQty: d.batchQty || 0,
     sheetsRequired: d.sheetsRequired || 0,
     batchCost: d.batchCost || 0,
@@ -1388,15 +1413,17 @@ async function saveProduct(){
   };
   if (statusEl) statusEl.textContent = 'Saving to Company Sheet…';
   try{
-    await fetch(dieSyncUrl, {
+    const res = await fetch(dieSyncUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({ type: 'products', action: 'save', record: sheetRecord })
     });
-    if (statusEl) statusEl.textContent = 'Saved ✓ — also added to the Company Sheet (Products tab).';
+    const result = await res.json();
+    if (!result.ok) throw new Error(result.error || 'Server rejected the save');
+    if (statusEl) statusEl.textContent = 'Saved ✓ — also added to the Company Sheet (Products tab), with full cost breakdown.';
   } catch(e){
     console.warn('Product sync failed:', e);
-    if (statusEl) statusEl.textContent = 'Saved on this device, but could not reach the Company Sheet — check your connection.';
+    if (statusEl) statusEl.textContent = 'Saved on this device, but the Company Sheet save failed: ' + (e.message || 'unknown error') + '.';
   }
 }
 
@@ -2247,16 +2274,20 @@ async function saveDie(){
     saveBtn.textContent = 'Saving…';
     setDieSyncStatus('Saving to shared registry…', 'info');
     try{
-      await fetch(dieSyncUrl, {
+      const res = await fetch(dieSyncUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({ type: 'dies', action: 'save', record })
       });
+      const result = await res.json();
+      if (!result.ok){
+        throw new Error(result.error || 'Server rejected the save');
+      }
       await refreshDiesFromServer();
       resetDieForm();
     } catch(e){
       console.warn('Save failed:', e);
-      setDieSyncStatus('Could not save to the shared registry — check your connection and try again. Your entry was not lost, retry Save.', 'error');
+      setDieSyncStatus('Save did not go through: ' + (e.message || 'unknown error') + '. Nothing was changed on the shared sheet — please retry.', 'error');
     } finally {
       saveBtn.disabled = false;
       saveBtn.textContent = wasEditing ? 'Update die' : 'Save die';
@@ -2309,14 +2340,18 @@ async function deleteDie(id){
   if (dieSyncUrl){
     setDieSyncStatus('Deleting…', 'info');
     try{
-      await fetch(dieSyncUrl, {
+      const res = await fetch(dieSyncUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({ type: 'dies', action: 'delete', id })
       });
+      const result = await res.json();
+      if (!result.ok){
+        throw new Error(result.error || 'Server rejected the delete');
+      }
       await refreshDiesFromServer();
     } catch(e){
-      setDieSyncStatus('Could not delete on the shared registry — check your connection and try again.', 'error');
+      setDieSyncStatus('Delete did not go through: ' + (e.message || 'unknown error') + '. Please retry.', 'error');
     }
     return;
   }
