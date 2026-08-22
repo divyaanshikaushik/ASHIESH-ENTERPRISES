@@ -1299,6 +1299,54 @@ function calculate(){
   };
 }
 
+// ---- Reusable per-unit breakdown card (matches the live Calculator view) ----
+function renderBreakdownCardHTML(bd){
+  if (!bd){
+    return '<div class="empty-note">No cost breakdown was saved with this entry yet.</div>';
+  }
+  const money = v => '₹' + (Number(v) || 0).toFixed(2);
+  const rows = [
+    ['Pattas per sheet', bd.pattasPerSheet],
+    ['Pieces per patta', bd.piecesPerPatta],
+    ['Shots per sheet (direct)', bd.shots],
+    ['Total pieces per sheet', bd.pieces],
+    ['Material cost / unit', money(bd.materialCost)],
+    ['Wastage cost / unit', money(bd.wastageCost)],
+    ['CNC cost / unit', money(bd.cncCost)],
+    ['Clicker cost / unit', money(bd.clickerCost)],
+    ['Laser cost / unit', money(bd.laserCost)],
+    ['Patta cutting cost / unit', money(bd.pattaCostPerUnit)],
+    ['Process cost / unit', money(bd.processCost)],
+    ['Tape pasting cost / unit', money(bd.tapeCost)],
+    ['Packaging cost / unit', money(bd.packagingCost)],
+    ['Labour cost / unit', money(bd.labourCost)],
+    ['Magnet cost / unit', money(bd.magnetCostPerUnit)]
+  ];
+  const rowsHtml = rows.map(([label, val]) =>
+    `<div class="result-line"><span>${label}</span><span class="val">${val}</span></div>`
+  ).join('');
+  return `
+    <h2>Per-Unit Breakdown</h2>
+    ${rowsHtml}
+    <div class="total-box">
+      <div class="big"><span class="label">Total cost / unit</span><span class="value">${money(bd.totalCost)}</span></div>
+      <div class="sep"></div>
+      <div class="big"><span class="label">Selling price / unit</span><span class="value">${money(bd.sellingPrice)}</span></div>
+    </div>`;
+}
+
+function showBreakdownModal(bd, title){
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(28,37,48,0.82);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px;cursor:zoom-out;';
+  const card = document.createElement('div');
+  card.style.cssText = 'background:var(--panel);border-radius:10px;padding:20px 24px;max-width:420px;width:100%;max-height:85vh;overflow-y:auto;cursor:default;';
+  card.innerHTML = (title ? `<h3 style="margin:0 0 4px; color:var(--slate);">${title}</h3>` : '') + renderBreakdownCardHTML(bd);
+  card.onclick = (e) => e.stopPropagation();
+  overlay.appendChild(card);
+  overlay.onclick = () => document.body.removeChild(overlay);
+  document.body.appendChild(overlay);
+}
+
 // ---- Saved products list (persists in this browser via localStorage) ----
 const STORAGE_KEY = 'ashiesh_costing_saved_products';
 
@@ -1333,7 +1381,8 @@ function currentRecord(){
     batchCost: document.getElementById('outBatchCost').textContent,
     batchPrice: document.getElementById('outBatchPrice').textContent,
     batchProfit: document.getElementById('outBatchProfit').textContent,
-    sheetsRequired: document.getElementById('outSheetsRequired').textContent
+    sheetsRequired: document.getElementById('outSheetsRequired').textContent,
+    breakdown: window.lastCalc ? JSON.parse(JSON.stringify(window.lastCalc)) : null
   };
 }
 
@@ -1355,6 +1404,7 @@ function renderSavedTable(){
       <td>${p.sellingPrice}</td>
       <td>${p.batchQty}</td>
       <td>${p.batchProfit}</td>
+      <td class="remove" style="color:var(--slate); cursor:pointer;" onclick="viewProductBreakdown(${i})" title="View cost breakdown">📊</td>
       <td class="remove" onclick="removeProduct(${i})">✕</td>
     </tr>`).join('');
   wrap.innerHTML = `
@@ -1369,10 +1419,17 @@ function renderSavedTable(){
           <th>Qty</th>
           <th>Batch Profit</th>
           <th></th>
+          <th></th>
         </tr>
       </thead>
       <tbody>${rows}</tbody>
     </table>`;
+}
+
+function viewProductBreakdown(i){
+  const p = savedProducts[i];
+  if (!p) return;
+  showBreakdownModal(p.breakdown, p.name);
 }
 
 async function saveProduct(){
@@ -2085,13 +2142,17 @@ async function refreshDiesFromServer(){
     const res = await fetch(dieSyncUrl + (dieSyncUrl.indexOf('?') > -1 ? '&' : '?') + 'type=dies', { method: 'GET' });
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || 'Server error');
-    dies = (data.records || []).map(r => ({
-      id: r.id, code: r.code, name: r.name, client: r.client, product: r.product,
-      length: Number(r.length) || 0, width: Number(r.width) || 0, sizeUnit: r.sizeUnit || 'in',
-      material: r.material || '', dieCost: Number(r.dieCost) || 0, productCost: Number(r.productCost) || 0,
-      status: r.status || 'Active', dateAdded: r.dateAdded || '', notes: r.notes || '',
-      dieImage: r.dieImageUrl || '', productImage: r.productImageUrl || ''
-    }));
+    dies = (data.records || []).map(r => {
+      let breakdown = null;
+      try{ breakdown = r.breakdownJson ? JSON.parse(r.breakdownJson) : null; } catch(e){ breakdown = null; }
+      return {
+        id: r.id, code: r.code, name: r.name, client: r.client, product: r.product,
+        length: Number(r.length) || 0, width: Number(r.width) || 0, sizeUnit: r.sizeUnit || 'in',
+        material: r.material || '', dieCost: Number(r.dieCost) || 0, productCost: Number(r.productCost) || 0,
+        status: r.status || 'Active', dateAdded: r.dateAdded || '', notes: r.notes || '',
+        dieImage: r.dieImageUrl || '', productImage: r.productImageUrl || '', breakdown
+      };
+    });
     persistDiesLocalCache();
     setDieSyncStatus('Synced ✓ — ' + dies.length + ' dies shared company-wide (last updated just now).', 'ok');
   } catch(e){
@@ -2126,6 +2187,7 @@ function resetDieForm(){
   document.getElementById('dieDateAdded').value = new Date().toISOString().slice(0,10);
   document.getElementById('dieNotes').value = '';
   currentDieImages = { dieImage: '', productImage: '' };
+  currentDieBreakdown = null;
   document.getElementById('dieImageInput').value = '';
   document.getElementById('productImageInput').value = '';
   setImagePreview('dieImage', '');
@@ -2137,6 +2199,7 @@ function resetDieForm(){
 
 // ---- Image handling (compressed, stored as base64 data URLs) ----
 let currentDieImages = { dieImage: '', productImage: '' };
+let currentDieBreakdown = null;
 const MAX_IMAGE_DIM = 640;
 const IMAGE_QUALITY = 0.65;
 
@@ -2207,6 +2270,7 @@ function prefillDieFromCalc(){
   const totalCostText = document.getElementById('outTotalCost').textContent.replace(/[₹,]/g, '');
   const totalCostNum = parseFloat(totalCostText);
   if (!isNaN(totalCostNum)) document.getElementById('dieProductCost').value = totalCostNum.toFixed(2);
+  currentDieBreakdown = window.lastCalc ? JSON.parse(JSON.stringify(window.lastCalc)) : null;
   showTab('dieregistry');
 }
 
@@ -2263,7 +2327,8 @@ async function saveDie(){
     dateAdded: document.getElementById('dieDateAdded').value || new Date().toISOString().slice(0,10),
     notes: document.getElementById('dieNotes').value.trim(),
     dieImage: currentDieImages.dieImage || '',
-    productImage: currentDieImages.productImage || ''
+    productImage: currentDieImages.productImage || '',
+    breakdown: currentDieBreakdown
   };
 
   const saveBtn = document.getElementById('dieSaveBtn');
@@ -2325,6 +2390,7 @@ function editDie(id){
   document.getElementById('dieDateAdded').value = d.dateAdded;
   document.getElementById('dieNotes').value = d.notes;
   currentDieImages = { dieImage: d.dieImage || '', productImage: d.productImage || '' };
+  currentDieBreakdown = d.breakdown || null;
   document.getElementById('dieImageInput').value = '';
   document.getElementById('productImageInput').value = '';
   setImagePreview('dieImage', currentDieImages.dieImage);
@@ -2401,6 +2467,7 @@ function renderDieTable(){
       <td>₹${(d.productCost || 0).toFixed(2)}</td>
       <td style="text-align:left;">${d.status}</td>
       <td style="text-align:left;">${d.dateAdded || '–'}</td>
+      <td class="remove" style="color:var(--slate); cursor:pointer;" onclick="viewDieBreakdown('${d.id}')" title="View cost breakdown">📊</td>
       <td class="remove" style="color:var(--slate); cursor:pointer;" onclick="editDie('${d.id}')">✎</td>
       <td class="remove" onclick="deleteDie('${d.id}')">✕</td>
     </tr>`;
@@ -2422,11 +2489,18 @@ function renderDieTable(){
           <th style="text-align:left;">Added</th>
           <th></th>
           <th></th>
+          <th></th>
         </tr>
       </thead>
       <tbody>${rows}</tbody>
     </table>`;
   updateBadges();
+}
+
+function viewDieBreakdown(id){
+  const d = dies.find(x => x.id === id);
+  if (!d) return;
+  showBreakdownModal(d.breakdown, d.name + ' (' + d.code + ')');
 }
 
 function viewDieImages(id){
